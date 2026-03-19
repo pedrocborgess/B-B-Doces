@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<title>B&B Doces</title>
+
+<style>
+body {
+  font-family: 'Georgia', serif;
+  background-color: #f5f1eb;
+  color: #5a3e2b;
+  padding: 20px;
+  text-align: center;
+}
+
+.container {
+  background: white;
+  padding: 25px;
+  border-radius: 15px;
+  max-width: 420px;
+  margin: auto;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+select {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 12px;
+  border-radius: 8px;
+}
+
+button {
+  background-color: #5a3e2b;
+  color: white;
+  border: none;
+  padding: 12px;
+  width: 100%;
+  border-radius: 10px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.preco {
+  font-size: 18px;
+  margin: 15px 0;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+  <h2>B&B Doces 🍰</h2>
+  <p>Monte seu pote do seu jeito</p>
+
+  <label>Tamanho</label>
+  <select id="tamanho" onchange="trocarCampos(); calcular();">
+    <option value="pequeno">Pequeno (R$10)</option>
+    <option value="grande">Grande (R$15)</option>
+  </select>
+
+  <div id="camadas"></div>
+
+  <label>Cobertura</label>
+  <select id="cobertura" onchange="calcular()"></select>
+
+  <div class="preco">Total: R$ <span id="total">10</span></div>
+
+  <button onclick="enviar()">Finalizar Pedido</button>
+</div>
+
+<script>
+
+// 🔥 CONFIGURAÇÃO
+const config = {
+  massas: [
+    { nome: "Chocolate", ativo: true },
+    { nome: "Baunilha", ativo: true },
+    { nome: "Cenoura", ativo: false }
+  ],
+
+  recheios: [
+    { nome: "Ninho", ativo: true },
+    { nome: "Brigadeiro", ativo: true },
+    { nome: "Doce de leite", ativo: true }
+  ],
+
+  coberturas: [
+    { nome: "Nenhuma", preco: 0, ativo: true },
+    { nome: "Nutella", preco: 3, ativo: true },
+    { nome: "Oreo", preco: 2, ativo: true }
+  ]
+};
+
+// 🧠 TROCAR CAMPOS
+function trocarCampos() {
+  let tamanho = document.getElementById("tamanho").value;
+  let div = document.getElementById("camadas");
+
+  if (tamanho === "pequeno") {
+    div.innerHTML = `
+      <label>Massa Base</label>
+      <select id="massa1"></select>
+
+      <label>Recheio</label>
+      <select id="recheio1"></select>
+
+      <label>Massa Topo</label>
+      <select id="massa2"></select>
+    `;
+  } else {
+    div.innerHTML = `
+      <label>Massa 1</label>
+      <select id="massa1"></select>
+
+      <label>Recheio 1</label>
+      <select id="recheio1"></select>
+
+      <label>Massa 2</label>
+      <select id="massa2"></select>
+
+      <label>Recheio 2</label>
+      <select id="recheio2"></select>
+
+      <label>Massa 3</label>
+      <select id="massa3"></select>
+    `;
+  }
+
+  carregarOpcoes();
+}
+
+// 🔄 CARREGAR OPÇÕES
+function carregarOpcoes() {
+  let massas = config.massas.filter(m => m.ativo);
+  let recheios = config.recheios.filter(r => r.ativo);
+  let coberturas = config.coberturas.filter(c => c.ativo);
+
+  document.querySelectorAll("[id^='massa']").forEach(select => {
+    select.innerHTML = "";
+    massas.forEach(m => {
+      let opt = document.createElement("option");
+      opt.text = m.nome;
+      select.add(opt);
+    });
+  });
+
+  document.querySelectorAll("[id^='recheio']").forEach(select => {
+    select.innerHTML = "";
+    recheios.forEach(r => {
+      let opt = document.createElement("option");
+      opt.text = r.nome;
+      select.add(opt);
+    });
+  });
+
+  let coberturaSelect = document.getElementById("cobertura");
+  coberturaSelect.innerHTML = "";
+
+  coberturas.forEach(c => {
+    let opt = document.createElement("option");
+    opt.value = c.preco;
+    opt.text = c.nome + (c.preco > 0 ? ` (+${c.preco})` : "");
+    coberturaSelect.add(opt);
+  });
+}
+
+// 💰 CALCULAR
+function calcular() {
+  let tamanho = document.getElementById("tamanho").value;
+  let base = tamanho === "pequeno" ? 10 : 15;
+
+  let cobertura = parseInt(document.getElementById("cobertura").value || 0);
+
+  document.getElementById("total").innerText = base + cobertura;
+}
+
+// 📲 ENVIAR
+function enviar() {
+  let tamanhoTexto = document.getElementById("tamanho").options[document.getElementById("tamanho").selectedIndex].text;
+  let coberturaTexto = document.getElementById("cobertura").options[document.getElementById("cobertura").selectedIndex].text;
+  let total = document.getElementById("total").innerText;
+
+  let mensagem = `Olá! Quero um bolo de pote:%0A${tamanhoTexto}%0A`;
+
+  document.querySelectorAll("select").forEach(sel => {
+    if (sel.id !== "tamanho" && sel.id !== "cobertura") {
+      mensagem += `${sel.previousElementSibling.innerText}: ${sel.value}%0A`;
+    }
+  });
+
+  mensagem += `Cobertura: ${coberturaTexto}%0A`;
+  mensagem += `Total: R$ ${total}`;
+
+  let numero = "5599999999999"; // COLOCA SEU NÚMERO
+
+  window.open(`https://wa.me/${numero}?text=${mensagem}`);
+}
+
+// 🚀 INICIAR
+trocarCampos();
+calcular();
+
+</script>
+
+</body>
+</html>
