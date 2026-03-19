@@ -62,7 +62,10 @@ button {
   <div id="camadas"></div>
 
   <label>Cobertura</label>
-  <select id="cobertura" onchange="calcular()"></select>
+  <select id="cobertura"></select>
+
+  <label>Adicional</label>
+  <select id="adicional" onchange="calcular()"></select>
 
   <div class="preco">Total: R$ <span id="total">10</span></div>
 
@@ -82,11 +85,19 @@ const config = {
   recheios: [
     { nome: "Ninho", ativo: true },
     { nome: "Brigadeiro", ativo: true },
-    { nome: "Doce de leite", ativo: true }
+    { nome: "Doce de leite", ativo: true },
+    { nome: "Geleia de morango", ativo: true }
   ],
 
   coberturas: [
-    { nome: "Nenhuma", preco: 0, ativo: true },
+    { nome: "Ninho", ativo: true },
+    { nome: "Brigadeiro", ativo: true },
+    { nome: "Doce de leite", ativo: true },
+    { nome: "Geleia de morango", ativo: true }
+  ],
+
+  adicionais: [
+    { nome: "Nenhum", preco: 0, ativo: true },
     { nome: "Nutella", preco: 3, ativo: true },
     { nome: "Oreo", preco: 2, ativo: true }
   ]
@@ -135,6 +146,7 @@ function carregarOpcoes() {
   let massas = config.massas.filter(m => m.ativo);
   let recheios = config.recheios.filter(r => r.ativo);
   let coberturas = config.coberturas.filter(c => c.ativo);
+  let adicionais = config.adicionais.filter(a => a.ativo);
 
   document.querySelectorAll("[id^='massa']").forEach(select => {
     select.innerHTML = "";
@@ -156,12 +168,19 @@ function carregarOpcoes() {
 
   let coberturaSelect = document.getElementById("cobertura");
   coberturaSelect.innerHTML = "";
-
   coberturas.forEach(c => {
     let opt = document.createElement("option");
-    opt.value = c.preco;
-    opt.text = c.nome + (c.preco > 0 ? ` (+${c.preco})` : "");
+    opt.text = c.nome;
     coberturaSelect.add(opt);
+  });
+
+  let adicionalSelect = document.getElementById("adicional");
+  adicionalSelect.innerHTML = "";
+  adicionais.forEach(a => {
+    let opt = document.createElement("option");
+    opt.value = a.preco;
+    opt.text = a.nome + (a.preco > 0 ? ` (+${a.preco})` : "");
+    adicionalSelect.add(opt);
   });
 }
 
@@ -170,29 +189,31 @@ function calcular() {
   let tamanho = document.getElementById("tamanho").value;
   let base = tamanho === "pequeno" ? 10 : 15;
 
-  let cobertura = parseInt(document.getElementById("cobertura").value || 0);
+  let adicional = parseInt(document.getElementById("adicional").value || 0);
 
-  document.getElementById("total").innerText = base + cobertura;
+  document.getElementById("total").innerText = base + adicional;
 }
 
 // 📲 ENVIAR
 function enviar() {
   let tamanhoTexto = document.getElementById("tamanho").options[document.getElementById("tamanho").selectedIndex].text;
-  let coberturaTexto = document.getElementById("cobertura").options[document.getElementById("cobertura").selectedIndex].text;
+  let coberturaTexto = document.getElementById("cobertura").value;
+  let adicionalTexto = document.getElementById("adicional").options[document.getElementById("adicional").selectedIndex].text;
   let total = document.getElementById("total").innerText;
 
   let mensagem = `Olá! Quero um bolo de pote:%0A${tamanhoTexto}%0A`;
 
   document.querySelectorAll("select").forEach(sel => {
-    if (sel.id !== "tamanho" && sel.id !== "cobertura") {
+    if (sel.id !== "tamanho" && sel.id !== "cobertura" && sel.id !== "adicional") {
       mensagem += `${sel.previousElementSibling.innerText}: ${sel.value}%0A`;
     }
   });
 
   mensagem += `Cobertura: ${coberturaTexto}%0A`;
+  mensagem += `Adicional: ${adicionalTexto}%0A`;
   mensagem += `Total: R$ ${total}`;
 
-  let numero = "5599999999999"; // COLOCA SEU NÚMERO
+  let numero = "5599999999999"; // 🔴 COLOCA SEU NÚMERO
 
   window.open(`https://wa.me/${numero}?text=${mensagem}`);
 }
